@@ -1,4 +1,5 @@
 # CRUD React-App 
+![React CRUD App](https://github.com/user-attachments/assets/c807ad70-67fe-4f3b-8b72-a3f0b4380c6c)
 
 This is a simple crud built with React that allows users to view product details based on product IDs. The data is fetched from a local JSON object containing product information.
 
