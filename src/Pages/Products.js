@@ -2,50 +2,63 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import '../App.css';
 import './Products.css';
-import Swal from 'sweetalert2'
-
+import Swal from 'sweetalert2';
 
 const api_url = "https://fakestoreapi.com/products"; 
 
 function Products() {
-    let [products, setProducts] = useState([]);
+    const [products, setProducts] = useState([]);
 
     useEffect(() => {
-        getAllProducts()
+        getAllProducts();
     }, []);
 
-        let getAllProducts = () => {
-            fetch(`http://localhost:9001/products`)
+    const getAllProducts = () => {
+        fetch(api_url) // Fetching from the API directly
             .then((res) => res.json())
             .then((data) => setProducts(data))
             .catch((err) => console.error('Error fetching products:', err));
-        }
+    };
         
-    // Delete a product and update the state
-    let deleteProduct = (productId) => {
+    const deleteProduct = (productId) => {
         Swal.fire({
-            title:`Are you sure to delete this item ?`,
+            title: `Are you sure to delete this item?`,
             text: "You won't be able to revert this!",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor:  '#d33',
-        cancelButtonColor:'#3085d6' ,
-        confirmButtonText: 'Yes, delete it!'
-        }).then( (data) => {
-            if(data.isConfirmed){
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Yes, delete it!'
+        }).then((data) => {
+            if (data.isConfirmed) {
+                // Make a DELETE request to the API (uncomment if the API supports DELETE)
                 fetch(`${api_url}/${productId}`, {
                     method: "DELETE",
                 })
-                    .then((res) => res.json())
-                    .then(() => {
-                        // Remove the deleted product from the state
-                        setProducts(products.filter((product) => product.id !== productId));
-                    })
-                    .catch((err) => console.error("Error deleting product:", err));
+                .then((res) => {
+                    if (!res.ok) {
+                        throw new Error("Error deleting product");
+                    }
+                    // Remove the deleted product from the state
+                    setProducts(products.filter((product) => product.id !== productId));
+                    Swal.fire(
+                        'Deleted!',
+                        'Your product has been deleted.',
+                        'success'
+                    );
+                })
+                .catch((err) => {
+                    console.error("Error deleting product:", err);
+                    Swal.fire(
+                        'Error!',
+                        'There was an issue deleting the product.',
+                        'error'
+                    );
+                });
             }
-        })
-       
+        });
     };
+
 
     return (
         <>
@@ -66,8 +79,8 @@ function Products() {
                         <tr key={product.id} className="table table-dark">
                             <th scope="row">{product.id}</th>
                             <td>{product.title}</td>
-                            <td>{product.description.slice(0, 60)}...</td>
-                            <td>{product.price}</td>
+                            <td>{product.description ? product.description.slice(0, 60) : "No description available"}...</td>
+                            <td>${product.price}</td>
                             <td>
                                 <button
                                     className="btn btn-danger btn-sm me-1"
@@ -81,7 +94,12 @@ function Products() {
                                 >
                                     View
                                 </Link>
-                                <button className="btn btn-primary btn-sm">Edit</button>
+                                <Link
+                                    to={`/add/${product.id}`} // Redirect to AddProduct with ID
+                                    className="btn btn-primary btn-sm"
+                                >
+                                    Edit
+                                </Link>
                             </td>
                         </tr>
                     ))}
