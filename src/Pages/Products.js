@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import '../App.css';
 import './Products.css';
+import Swal from 'sweetalert2'
+
 
 const api_url = "https://fakestoreapi.com/products"; 
 
@@ -9,23 +11,40 @@ function Products() {
     let [products, setProducts] = useState([]);
 
     useEffect(() => {
-        fetch(api_url)
+        getAllProducts()
+    }, []);
+
+        let getAllProducts = () => {
+            fetch(`http://localhost:9001/products`)
             .then((res) => res.json())
             .then((data) => setProducts(data))
             .catch((err) => console.error('Error fetching products:', err));
-    }, []);
-
+        }
+        
     // Delete a product and update the state
     let deleteProduct = (productId) => {
-        fetch(`${api_url}/${productId}`, {
-            method: "DELETE",
+        Swal.fire({
+            title:`Are you sure to delete this item ?`,
+            text: "You won't be able to revert this!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor:  '#d33',
+        cancelButtonColor:'#3085d6' ,
+        confirmButtonText: 'Yes, delete it!'
+        }).then( (data) => {
+            if(data.isConfirmed){
+                fetch(`${api_url}/${productId}`, {
+                    method: "DELETE",
+                })
+                    .then((res) => res.json())
+                    .then(() => {
+                        // Remove the deleted product from the state
+                        setProducts(products.filter((product) => product.id !== productId));
+                    })
+                    .catch((err) => console.error("Error deleting product:", err));
+            }
         })
-            .then((res) => res.json())
-            .then(() => {
-                // Remove the deleted product from the state
-                setProducts(products.filter((product) => product.id !== productId));
-            })
-            .catch((err) => console.error("Error deleting product:", err));
+       
     };
 
     return (
